@@ -1,7 +1,12 @@
-import 'package:chat_app/widgets/chat/message_bubble.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:chat_app/widgets/chat/message_bubble.dart';
+
+final _firebaseAuth = FirebaseAuth.instance;
+final _firebaseFs = FirebaseFirestore.instance;
 
 class ChatMessages extends StatelessWidget {
   const ChatMessages({super.key, required this.roomName});
@@ -10,38 +15,35 @@ class ChatMessages extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authenticatedUser = FirebaseAuth.instance.currentUser!;
+    final authenticatedUser = _firebaseAuth.currentUser!;
 
     return StreamBuilder(
-      stream: FirebaseFirestore.instance
+      stream: _firebaseFs
           .collection('rooms')
           .doc(roomName)
           .collection('messages')
-          .orderBy(
-            'createdAt',
-            descending: true,
-          )
+          .orderBy('createdAt', descending: true)
           .snapshots(),
-      builder: (ctx, chatSnapshots) {
-        if (chatSnapshots.connectionState == ConnectionState.waiting) {
+      builder: (ctx, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
           );
         }
 
-        if (!chatSnapshots.hasData || chatSnapshots.data!.docs.isEmpty) {
-          return const Center(
-            child: Text('No messages found.'),
-          );
-        }
-
-        if (chatSnapshots.hasError) {
+        if (snapshot.hasError) {
           return const Center(
             child: Text('Something went wrong...'),
           );
         }
 
-        final loadedMessages = chatSnapshots.data!.docs;
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text('No messages found.'),
+          );
+        }
+
+        final loadedMessages = snapshot.data!.docs;
 
         return ListView.builder(
           padding: const EdgeInsets.only(

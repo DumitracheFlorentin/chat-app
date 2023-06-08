@@ -1,7 +1,11 @@
-import 'package:chat_app/widgets/chat/chat_messages.dart';
-import 'package:chat_app/widgets/chat/new_message.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:chat_app/widgets/chat/new_message.dart';
+import 'package:chat_app/widgets/chat/chat_messages.dart';
+
+final _firebaseFs = FirebaseFirestore.instance;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({
@@ -10,11 +14,13 @@ class ChatScreen extends StatefulWidget {
     required this.secondUser,
   });
 
-  final currentUser;
-  final secondUser;
+  final Map<String, dynamic> currentUser;
+  final Map<String, dynamic> secondUser;
 
   @override
-  State<ChatScreen> createState() => _ChatScreenState();
+  State<ChatScreen> createState() {
+    return _ChatScreenState();
+  }
 }
 
 class _ChatScreenState extends State<ChatScreen> {
@@ -26,43 +32,39 @@ class _ChatScreenState extends State<ChatScreen> {
     roomNameFuture = checkAndCreateRoom(widget.currentUser, widget.secondUser);
   }
 
-  Future<String> checkAndCreateRoom(user1, user2) async {
-    List<String> userIds = [user1['uid'], user2['uid']];
+  Future<String> checkAndCreateRoom(firstUser, secondUser) async {
+    List<String> userIds = [firstUser['uid'], secondUser['uid']];
     userIds.sort();
 
-    String roomName = '${userIds[0]}_${userIds[1]}';
+    String roomId = '${userIds[0]}_${userIds[1]}';
 
-    var roomQuery = FirebaseFirestore.instance
+    var roomSnapshot = await _firebaseFs
         .collection('rooms')
-        .where('name', isEqualTo: roomName)
-        .limit(1);
+        .where(
+          'name',
+          isEqualTo: roomId,
+        )
+        .limit(1)
+        .get();
 
-    var roomSnapshot = await roomQuery.get();
-
-    if (roomSnapshot.docs.isNotEmpty) {
-      // Room exists
-      // Perform any additional logic if needed
-    } else {
-      // Room doesn't exist
-      // Create a new room using roomName and the user IDs
-      var newRoom =
-          FirebaseFirestore.instance.collection('rooms').doc(roomName);
+    if (!roomSnapshot.docs.isNotEmpty) {
+      var newRoom = _firebaseFs.collection('rooms').doc(roomId);
 
       var messagesCollection = newRoom.collection('messages');
 
       await newRoom.set({
-        'name': roomName,
-        'user1_id': user1['uid'],
-        'user2_id': user2['uid'],
-        'user1_image': user1['image_url'],
-        'user2_image': user2['image_url'],
-        'user1_username': user1['username'],
-        'user2_username': user2['username'],
+        'name': roomId,
+        'user1_id': firstUser['uid'],
+        'user2_id': secondUser['uid'],
+        'user1_image': firstUser['image_url'],
+        'user2_image': secondUser['image_url'],
+        'user1_username': firstUser['username'],
+        'user2_username': secondUser['username'],
         'messagesCollection': messagesCollection.doc(),
       });
     }
 
-    return roomName;
+    return roomId;
   }
 
   @override
@@ -79,24 +81,21 @@ class _ChatScreenState extends State<ChatScreen> {
               child: CircularProgressIndicator(),
             );
           }
+
           if (snapshot.hasError) {
             return const Center(
               child: Text('Error retrieving room name'),
             );
           }
 
-          final roomName = snapshot.data!;
+          final room = snapshot.data!;
 
           return Column(
             children: [
               Expanded(
-                child: ChatMessages(
-                  roomName: roomName,
-                ),
+                child: ChatMessages(roomName: room),
               ),
-              NewMessage(
-                roomName: roomName,
-              ),
+              NewMessage(roomName: room),
             ],
           );
         },

@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart';
+
 import 'package:chat_app/widgets/auth/authForm.dart';
 import 'package:chat_app/widgets/auth/authTitle.dart';
-import 'package:flutter/material.dart';
 
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});

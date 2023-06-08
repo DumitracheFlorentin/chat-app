@@ -1,6 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+final _firebaseFs = FirebaseFirestore.instance;
+final _firebaseAuth = FirebaseAuth.instance;
 
 class NewMessage extends StatefulWidget {
   const NewMessage({super.key, required this.roomName});
@@ -32,23 +36,23 @@ class _NewMessageState extends State<NewMessage> {
     FocusScope.of(context).unfocus();
     _messageController.clear();
 
-    final user = FirebaseAuth.instance.currentUser!;
-    final userData = await FirebaseFirestore.instance
+    final userData = await _firebaseFs
         .collection('users')
-        .doc(user.uid)
+        .doc(_firebaseAuth.currentUser!.uid)
         .get();
+    final messageData = {
+      'text': enteredMessage,
+      'createdAt': Timestamp.now(),
+      'userId': userData.data()!['uid'],
+      'username': userData.data()!['username'],
+      'userImage': userData.data()!['image_url'],
+    };
 
-    await FirebaseFirestore.instance
+    await _firebaseFs
         .collection('rooms')
         .doc(widget.roomName)
         .collection('messages')
-        .add({
-      'text': enteredMessage,
-      'createdAt': Timestamp.now(),
-      'userId': user.uid,
-      'username': userData.data()!['username'],
-      'userImage': userData.data()!['image_url'],
-    });
+        .add(messageData);
   }
 
   @override
@@ -65,9 +69,10 @@ class _NewMessageState extends State<NewMessage> {
             child: TextField(
               controller: _messageController,
               textCapitalization: TextCapitalization.sentences,
-              autocorrect: true,
               enableSuggestions: true,
-              decoration: InputDecoration(labelText: 'Send a message...'),
+              decoration: const InputDecoration(
+                labelText: 'Send a message...',
+              ),
             ),
           ),
           IconButton(
