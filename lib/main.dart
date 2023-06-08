@@ -8,6 +8,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:chat_app/screens/auth.dart';
 import 'package:chat_app/screens/splash.dart';
 
+final _firebase = FirebaseAuth.instance;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -31,7 +33,7 @@ class App extends StatelessWidget {
         ),
       ),
       home: StreamBuilder(
-        stream: FirebaseAuth.instance.authStateChanges(),
+        stream: _firebase.authStateChanges(),
         builder: (ctx, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const SplashScreen();
