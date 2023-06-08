@@ -1,124 +1,119 @@
-import 'package:chat_app/screens/chat.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class RoomsScreen extends StatelessWidget {
-  RoomsScreen({super.key, required this.onSelectContacts});
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-  void Function(int index) onSelectContacts;
+import 'package:chat_app/screens/chat.dart';
+
+final _firebaseFs = FirebaseFirestore.instance;
+final _firebaseAuth = FirebaseAuth.instance;
+
+class RoomsScreen extends StatelessWidget {
+  const RoomsScreen({super.key, required this.onSelectContacts});
+
+  final Function(int index) onSelectContacts;
+
+  List<Map<String, dynamic>> _getFilteredRooms(
+      List<Map<String, dynamic>> rooms) {
+    for (final room in rooms) {
+      final bool isCurrentUserRoom =
+          room['user1_id'] == _firebaseAuth.currentUser!.uid;
+
+      room['currentUser'] = {
+        'uid': isCurrentUserRoom ? room['user1_id'] : room['user2_id'],
+        'image_url':
+            isCurrentUserRoom ? room['user1_image'] : room['user2_image'],
+        'username':
+            isCurrentUserRoom ? room['user1_username'] : room['user2_username'],
+      };
+
+      room['secondUser'] = {
+        'uid': isCurrentUserRoom ? room['user2_id'] : room['user1_id'],
+        'image_url':
+            isCurrentUserRoom ? room['user2_image'] : room['user1_image'],
+        'username':
+            isCurrentUserRoom ? room['user2_username'] : room['user1_username'],
+      };
+    }
+
+    return rooms.toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: FutureBuilder<QuerySnapshot>(
-          future: FirebaseFirestore.instance.collection('rooms').get(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
+    return FutureBuilder<QuerySnapshot>(
+      future: _firebaseFs.collection('rooms').get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
 
-            if (snapshot.hasError) {
-              return const Center(
-                child: Text('Error retrieving users'),
-              );
-            }
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('Error retrieving users'),
+          );
+        }
 
-            final List<QueryDocumentSnapshot> documents = snapshot.data!.docs;
-            final List<Map<String, dynamic>> rooms = documents
-                .map((doc) => doc.data() as Map<String, dynamic>)
-                .where((roomData) =>
-                    roomData['user1_id'] ==
-                        FirebaseAuth.instance.currentUser!.uid ||
-                    roomData['user2_id'] ==
-                        FirebaseAuth.instance.currentUser!.uid)
-                .toList();
+        // get all rooms by currentUser's uid
+        final List<Map<String, dynamic>> rooms = snapshot.data!.docs
+            .map((doc) => doc.data() as Map<String, dynamic>)
+            .where(
+              (roomData) =>
+                  roomData['user1_id'] == _firebaseAuth.currentUser!.uid ||
+                  roomData['user2_id'] == _firebaseAuth.currentUser!.uid,
+            )
+            .toList();
 
-            if (rooms.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text('No rooms found. Create one!'),
-                    TextButton.icon(
-                      onPressed: () {
-                        onSelectContacts(1);
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text('Create room'),
-                    ),
-                  ],
-                ),
-              );
-            }
+        final filteredRooms = _getFilteredRooms(rooms);
 
-            return ListView.builder(
-              itemCount: rooms.length,
-              itemBuilder: (context, index) {
-                final roomData = rooms[index];
-                var currentUser;
-                var secondUser;
-
-                if (roomData['user1_id'] ==
-                    FirebaseAuth.instance.currentUser!.uid) {
-                  currentUser = {
-                    'uid': roomData['user1_id'],
-                    'image_url': roomData['user1_image'],
-                    'username': roomData['user1_username'],
-                  };
-
-                  secondUser = {
-                    'uid': roomData['user2_id'],
-                    'image_url': roomData['user2_image'],
-                    'username': roomData['user2_username'],
-                  };
-                } else {
-                  currentUser = {
-                    'uid': roomData['user2_id'],
-                    'image_url': roomData['user2_image'],
-                    'username': roomData['user2_username'],
-                  };
-
-                  secondUser = {
-                    'uid': roomData['user1_id'],
-                    'image_url': roomData['user1_image'],
-                    'username': roomData['user1_username'],
-                  };
-                }
-
-                return InkWell(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ChatScreen(
-                          currentUser: currentUser,
-                          secondUser: secondUser,
-                        ),
-                      ),
-                    );
+        if (filteredRooms.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('No rooms found. Create one!'),
+                TextButton.icon(
+                  onPressed: () {
+                    onSelectContacts(1);
                   },
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: NetworkImage(
-                        roomData['user1_id'] ==
-                                FirebaseAuth.instance.currentUser!.uid
-                            ? roomData['user2_image']
-                            : roomData['user1_image'],
-                      ),
-                    ),
-                    title: Text(
-                      roomData['user1_id'] ==
-                              FirebaseAuth.instance.currentUser!.uid
-                          ? roomData['user2_username']
-                          : roomData['user1_username'],
+                  icon: const Icon(
+                    Icons.add,
+                  ),
+                  label: const Text('Create room'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: filteredRooms.length,
+          itemBuilder: (context, index) {
+            return InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ChatScreen(
+                      currentUser: filteredRooms[index]['currentUser'],
+                      secondUser: filteredRooms[index]['secondUser'],
                     ),
                   ),
                 );
               },
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    filteredRooms[index]['secondUser']['image_url'],
+                  ),
+                ),
+                title: Text(filteredRooms[index]['secondUser']['username']),
+              ),
             );
-          }),
+          },
+        );
+      },
     );
   }
 }

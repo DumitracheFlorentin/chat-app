@@ -1,8 +1,11 @@
-import 'package:chat_app/screens/chat.dart';
-import 'package:chat_app/screens/contacts.dart';
-import 'package:chat_app/screens/rooms.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:chat_app/screens/rooms.dart';
+import 'package:chat_app/screens/contacts.dart';
+
+final _firebase = FirebaseAuth.instance;
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
@@ -14,40 +17,45 @@ class TabsScreen extends StatefulWidget {
 }
 
 class _TabsScreenState extends State<TabsScreen> {
-  int _selectedPageIndex = 0;
+  int _screenIndex = 0;
 
-  void _selectPage(int index) {
+  void _selectScreen(int index) {
     setState(() {
-      _selectedPageIndex = index;
+      _screenIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget activePage = RoomsScreen(
-      onSelectContacts: _selectPage,
-    );
-    var activePageTitle = 'Conversations';
+    Widget activeScreen = RoomsScreen(onSelectContacts: _selectScreen);
+    String activeScreenTitle = 'Conversations';
 
-    if (_selectedPageIndex == 1) {
-      activePage = const ContactsScreen();
-      activePageTitle = 'Contacts';
+    if (_screenIndex == 1) {
+      activeScreen = const ContactsScreen();
+      activeScreenTitle = 'Contacts';
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(activePageTitle), actions: [
-        IconButton(
-          onPressed: () {
-            FirebaseAuth.instance.signOut();
-          },
-          icon: Icon(Icons.exit_to_app,
-              color: Theme.of(context).colorScheme.primary),
+      appBar: AppBar(
+        title: Text(
+          activeScreenTitle,
         ),
-      ]),
-      body: activePage,
+        actions: [
+          IconButton(
+            onPressed: () {
+              _firebase.signOut();
+            },
+            icon: Icon(
+              Icons.logout,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+      body: activeScreen,
       bottomNavigationBar: BottomNavigationBar(
-        onTap: _selectPage,
-        currentIndex: _selectedPageIndex,
+        onTap: _selectScreen,
+        currentIndex: _screenIndex,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.chat),
