@@ -29,7 +29,7 @@ class _AuthFormState extends State<AuthForm> {
   var _enteredUsername = '';
   var _enteredPassword = '';
   var _isAuthenticating = false;
-  var _selectedRole = 'student';
+  var _selectedRole = 'guest';
 
   void _submit() async {
     final isValid = _form.currentState!.validate();
@@ -176,6 +176,10 @@ class _AuthFormState extends State<AuthForm> {
                       DropdownMenuItem(
                         value: 'student',
                         child: Text('Student'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'guest',
+                        child: Text('Guest'),
                       ),
                     ],
                     onChanged: (value) {
