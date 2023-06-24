@@ -1,3 +1,4 @@
+import 'package:chat_app/screens/profile.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,6 +36,11 @@ class _TabsScreenState extends State<TabsScreen> {
       activeScreenTitle = 'Contacts';
     }
 
+    if (_screenIndex == 2) {
+      activeScreen = const ProfileScreen();
+      activeScreenTitle = 'Profile';
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -64,6 +70,10 @@ class _TabsScreenState extends State<TabsScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.contacts),
             label: 'Contacts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
           ),
         ],
       ),
