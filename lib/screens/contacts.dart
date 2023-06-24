@@ -21,6 +21,23 @@ class ContactsScreen extends StatelessWidget {
     return {};
   }
 
+  List<Map<String, dynamic>> getFilteredUsers(
+      List<Map<String, dynamic>> users) {
+    final currentUser = getCurrentUser(users);
+
+    if (currentUser['role'] == 'teacher') {
+      return users
+          .where((userData) => userData['uid'] != currentUser['uid'])
+          .toList();
+    }
+
+    return users
+        .where((userData) =>
+            userData['uid'] != currentUser['uid'] &&
+            userData['role'] == 'teacher')
+        .toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<QuerySnapshot>(
@@ -44,13 +61,7 @@ class ContactsScreen extends StatelessWidget {
 
         final currentUser = getCurrentUser(users);
 
-        final filteredUsers = users
-            .where(
-              (userData) =>
-                  userData['uid'] != currentUser['uid'] &&
-                  userData['role'] == 'teacher',
-            )
-            .toList();
+        final filteredUsers = getFilteredUsers(users);
 
         if (users.isEmpty) {
           return const Center(
