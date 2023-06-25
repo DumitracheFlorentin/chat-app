@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:chat_app/screens/rooms.dart';
 import 'package:chat_app/screens/contacts.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
+final _firebase = FirebaseAuth.instance;
+
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
 
@@ -38,6 +42,31 @@ class _TabsScreenState extends State<TabsScreen> {
       activeScreenTitle = 'Profile';
     }
 
+    IconData _getAppBarIcon() {
+      if (_screenIndex == 0) {
+        return Icons.search;
+      } else if (_screenIndex == 1) {
+        return Icons.add; // Use different icon for index 1 (Contacts)
+      } else if (_screenIndex == 2) {
+        return Icons.logout; // Use different icon for index 2 (Profile)
+      } else {
+        return Icons.add; // Default to add icon
+      }
+    }
+
+    void _handleAppBarAction() {
+      if (_screenIndex == 0) {
+      } else if (_screenIndex == 1) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => const NewChat(),
+          ),
+        );
+      } else if (_screenIndex == 2) {
+        _firebase.signOut();
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -45,14 +74,8 @@ class _TabsScreenState extends State<TabsScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => const NewChat(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.add),
+            onPressed: _handleAppBarAction,
+            icon: Icon(_getAppBarIcon()),
           ),
         ],
       ),
