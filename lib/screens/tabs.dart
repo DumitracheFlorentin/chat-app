@@ -1,12 +1,9 @@
+import 'package:chat_app/screens/new_chat.dart';
 import 'package:chat_app/screens/profile.dart';
 import 'package:flutter/material.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-
 import 'package:chat_app/screens/rooms.dart';
 import 'package:chat_app/screens/contacts.dart';
-
-final _firebase = FirebaseAuth.instance;
 
 class TabsScreen extends StatefulWidget {
   const TabsScreen({super.key});
@@ -49,12 +46,13 @@ class _TabsScreenState extends State<TabsScreen> {
         actions: [
           IconButton(
             onPressed: () {
-              _firebase.signOut();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => const NewChat(),
+                ),
+              );
             },
-            icon: Icon(
-              Icons.logout,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            icon: const Icon(Icons.add),
           ),
         ],
       ),
