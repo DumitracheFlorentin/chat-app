@@ -43,20 +43,16 @@ class _TabsScreenState extends State<TabsScreen> {
     }
 
     IconData _getAppBarIcon() {
-      if (_screenIndex == 0) {
-        return Icons.search;
-      } else if (_screenIndex == 1) {
+      if (_screenIndex == 1) {
         return Icons.add; // Use different icon for index 1 (Contacts)
       } else if (_screenIndex == 2) {
         return Icons.logout; // Use different icon for index 2 (Profile)
-      } else {
-        return Icons.add; // Default to add icon
       }
+      return Icons.add;
     }
 
     void _handleAppBarAction() {
-      if (_screenIndex == 0) {
-      } else if (_screenIndex == 1) {
+      if (_screenIndex == 1) {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (ctx) => const NewChat(),
@@ -67,17 +63,23 @@ class _TabsScreenState extends State<TabsScreen> {
       }
     }
 
+    Widget _buildAppBarActions() {
+      if (_screenIndex == 1 || _screenIndex == 2) {
+        return IconButton(
+          onPressed: _handleAppBarAction,
+          icon: Icon(_getAppBarIcon()),
+        );
+      } else {
+        return Container();
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           activeScreenTitle,
         ),
-        actions: [
-          IconButton(
-            onPressed: _handleAppBarAction,
-            icon: Icon(_getAppBarIcon()),
-          ),
-        ],
+        actions: [_buildAppBarActions()],
       ),
       body: activeScreen,
       bottomNavigationBar: BottomNavigationBar(
