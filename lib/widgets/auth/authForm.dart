@@ -34,10 +34,30 @@ class _AuthFormState extends State<AuthForm> {
   void _submit() async {
     final isValid = _form.currentState!.validate();
 
-    if (!isValid || (!_isLogin && _selectedImage == null)) {
+    if (!_isLogin && _selectedImage == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Image not selected'),
+            content: const Text('Please select an image.'),
+            actions: [
+              TextButton(
+                child: const Text('Close'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
       return;
     }
 
+    if (!isValid) {
+      return;
+    }
     _form.currentState!.save();
 
     try {
