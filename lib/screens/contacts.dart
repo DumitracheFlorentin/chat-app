@@ -12,7 +12,7 @@ class ContactsScreen extends StatelessWidget {
         left: 16,
         right: 4,
       ),
-      child: ContactsList(),
+      child: const ContactsList(isEnabledCreatedGroup: false),
     );
   }
 }
