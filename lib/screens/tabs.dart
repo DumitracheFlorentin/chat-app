@@ -54,7 +54,7 @@ class _TabsScreenState extends State<TabsScreen> {
       if (_screenIndex == 1) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (ctx) => NewChat(),
+            builder: (ctx) => const NewChat(),
           ),
         );
 

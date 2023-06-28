@@ -1,27 +1,30 @@
 import 'package:flutter/material.dart';
-
 import 'package:chat_app/screens/chat.dart';
 import 'package:chat_app/utils/users.dart';
 
 class ContactsList extends StatefulWidget {
-  const ContactsList({super.key, required this.isEnabledCreatedGroup});
+  const ContactsList({
+    Key? key,
+    required this.isEnabledCreatedGroup,
+    required this.users,
+    required this.isLoading,
+  }) : super(key: key);
 
   final bool isEnabledCreatedGroup;
+  final List<Map<String, dynamic>> users;
+  final bool isLoading;
 
   @override
   State<ContactsList> createState() => _ContactsListState();
 }
 
 class _ContactsListState extends State<ContactsList> {
-  List<Map<String, dynamic>> users = [];
   Map<String, dynamic> currentUser = {};
-  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
     getCurrentUser();
-    getUsers();
   }
 
   void getCurrentUser() async {
@@ -32,35 +35,21 @@ class _ContactsListState extends State<ContactsList> {
     });
   }
 
-  void getUsers() async {
-    isLoading = true;
-
-    final List<Map<String, dynamic>> allUsers = await fetchAllUsers();
-
-    final List<Map<String, dynamic>> filteredUsers =
-        allUsers.where((user) => user['uid'] != currentUser['uid']).toList();
-
-    setState(() {
-      users = filteredUsers;
-      isLoading = false;
-    });
-  }
-
   void handleCheckboxChange(int index, bool value) {
     setState(() {
-      users[index]['checked'] = value;
+      widget.users[index]['checked'] = value;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (widget.isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    if (users.isEmpty) {
+    if (widget.users.isEmpty) {
       return const Center(
         child: Text('No users found.'),
       );
@@ -68,9 +57,9 @@ class _ContactsListState extends State<ContactsList> {
 
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: users.length,
+      itemCount: widget.users.length,
       itemBuilder: (context, index) {
-        final Map<String, dynamic> user = users[index];
+        final Map<String, dynamic> user = widget.users[index];
 
         return ListTile(
           contentPadding: EdgeInsets.zero,
@@ -81,9 +70,12 @@ class _ContactsListState extends State<ContactsList> {
           trailing: widget.isEnabledCreatedGroup
               ? Checkbox(
                   value: user['checked'] ?? false,
-                  onChanged: (value) => {
-                        handleCheckboxChange(index, value ?? false),
-                      })
+                  onChanged: (value) {
+                    setState(() {
+                      handleCheckboxChange(index, value ?? false);
+                    });
+                  },
+                )
               : IconButton(
                   icon: const Icon(Icons.chat),
                   onPressed: () {
