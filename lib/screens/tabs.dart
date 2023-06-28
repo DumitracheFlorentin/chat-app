@@ -1,11 +1,11 @@
-import 'package:chat_app/screens/new_chat.dart';
-import 'package:chat_app/screens/profile.dart';
 import 'package:flutter/material.dart';
 
-import 'package:chat_app/screens/rooms.dart';
-import 'package:chat_app/screens/contacts.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:chat_app/screens/new_chat.dart';
+import 'package:chat_app/screens/contacts.dart';
+import 'package:chat_app/screens/profile.dart';
+import 'package:chat_app/screens/rooms.dart';
 
 final _firebase = FirebaseAuth.instance;
 
@@ -42,36 +42,40 @@ class _TabsScreenState extends State<TabsScreen> {
       activeScreenTitle = 'Profile';
     }
 
-    IconData _getAppBarIcon() {
+    IconData getAppBarIcon() {
       if (_screenIndex == 1) {
-        return Icons.add; // Use different icon for index 1 (Contacts)
-      } else if (_screenIndex == 2) {
-        return Icons.logout; // Use different icon for index 2 (Profile)
+        return Icons.add;
       }
-      return Icons.add;
+
+      return Icons.logout;
     }
 
-    void _handleAppBarAction() {
+    void getAppBarAction() {
       if (_screenIndex == 1) {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (ctx) => NewChat(),
           ),
         );
-      } else if (_screenIndex == 2) {
-        _firebase.signOut();
+
+        return;
       }
+
+      _firebase.signOut();
     }
 
-    Widget _buildAppBarActions() {
+    Widget buildAppBarActions() {
       if (_screenIndex == 1 || _screenIndex == 2) {
         return IconButton(
-          onPressed: _handleAppBarAction,
-          icon: Icon(_getAppBarIcon()),
+          onPressed: getAppBarAction,
+          icon: Icon(getAppBarIcon()),
         );
-      } else {
-        return Container();
       }
+
+      return const SizedBox(
+        height: 0,
+        width: 0,
+      );
     }
 
     return Scaffold(
@@ -79,7 +83,9 @@ class _TabsScreenState extends State<TabsScreen> {
         title: Text(
           activeScreenTitle,
         ),
-        actions: [_buildAppBarActions()],
+        actions: [
+          buildAppBarActions(),
+        ],
       ),
       body: activeScreen,
       bottomNavigationBar: BottomNavigationBar(

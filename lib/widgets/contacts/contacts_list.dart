@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:chat_app/screens/chat.dart';
-
-final _firebaseAuth = FirebaseAuth.instance;
-final _firebaseFs = FirebaseFirestore.instance;
+import 'package:chat_app/widgets/utils/users.dart';
 
 class ContactsList extends StatefulWidget {
   const ContactsList({super.key, required this.isEnabledCreatedGroup});
@@ -14,55 +9,41 @@ class ContactsList extends StatefulWidget {
   final bool isEnabledCreatedGroup;
 
   @override
-  _ContactsListState createState() => _ContactsListState();
+  State<ContactsList> createState() => _ContactsListState();
 }
 
 class _ContactsListState extends State<ContactsList> {
   List<Map<String, dynamic>> users = [];
   Map<String, dynamic> currentUser = {};
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    fetchCurrentUser();
+    getCurrentUser();
     getUsers();
   }
 
-  void fetchCurrentUser() async {
-    try {
-      final user = _firebaseAuth.currentUser;
-      if (user != null) {
-        final DocumentSnapshot snapshot =
-            await _firebaseFs.collection('users').doc(user.uid).get();
-        final userData = snapshot.data() as Map<String, dynamic>;
+  void getCurrentUser() async {
+    final userData = await fetchCurrentUser();
 
-        setState(() {
-          currentUser = userData;
-        });
-      }
-    } catch (error) {
-      print('Error retrieving current user: $error');
-    }
+    setState(() {
+      currentUser = userData;
+    });
   }
 
   void getUsers() async {
-    try {
-      final QuerySnapshot snapshot =
-          await _firebaseFs.collection('users').get();
-      final List<Map<String, dynamic>> fetchedUsers = snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
-          .toList();
+    isLoading = true;
 
-      final filteredUsers = fetchedUsers
-          .where((user) => user['uid'] != currentUser['uid'])
-          .toList();
+    final List<Map<String, dynamic>> allUsers = await fetchAllUsers();
 
-      setState(() {
-        users = filteredUsers;
-      });
-    } catch (error) {
-      print('Error retrieving users: $error');
-    }
+    final List<Map<String, dynamic>> filteredUsers =
+        allUsers.where((user) => user['uid'] != currentUser['uid']).toList();
+
+    setState(() {
+      users = filteredUsers;
+      isLoading = false;
+    });
   }
 
   void handleCheckboxChange(int index, bool value) {
@@ -73,49 +54,51 @@ class _ContactsListState extends State<ContactsList> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     if (users.isEmpty) {
       return const Center(
         child: Text('No users found.'),
       );
     }
 
-    return Container(
-      padding: EdgeInsets.zero,
-      child: ListView.builder(
-        shrinkWrap: true,
-        padding: EdgeInsets.zero,
-        itemCount: users.length,
-        itemBuilder: (context, index) {
-          final userData = users[index];
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: users.length,
+      itemBuilder: (context, index) {
+        final Map<String, dynamic> user = users[index];
 
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(userData['image_url']),
-            ),
-            title: Text(userData['username']),
-            trailing: widget.isEnabledCreatedGroup
-                ? Checkbox(
-                    value: userData['checked'] ?? false,
-                    onChanged: (value) => {
-                          handleCheckboxChange(index, value ?? false),
-                        })
-                : IconButton(
-                    icon: const Icon(Icons.chat),
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => ChatScreen(
-                            currentUser: currentUser,
-                            secondUser: userData,
-                          ),
+        return ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: CircleAvatar(
+            backgroundImage: NetworkImage(user['image_url']),
+          ),
+          title: Text(user['username']),
+          trailing: widget.isEnabledCreatedGroup
+              ? Checkbox(
+                  value: user['checked'] ?? false,
+                  onChanged: (value) => {
+                        handleCheckboxChange(index, value ?? false),
+                      })
+              : IconButton(
+                  icon: const Icon(Icons.chat),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (ctx) => ChatScreen(
+                          currentUser: currentUser,
+                          secondUser: user,
                         ),
-                      );
-                    },
-                  ),
-          );
-        },
-      ),
+                      ),
+                    );
+                  },
+                ),
+        );
+      },
     );
   }
 }

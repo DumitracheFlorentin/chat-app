@@ -14,7 +14,8 @@ class RoomsScreen extends StatelessWidget {
   final Function(int index) onSelectContacts;
 
   List<Map<String, dynamic>> _getFilteredRooms(
-      List<Map<String, dynamic>> rooms) {
+    List<Map<String, dynamic>> rooms,
+  ) {
     for (final room in rooms) {
       final bool isCurrentUserRoom =
           room['user1_id'] == _firebaseAuth.currentUser!.uid;

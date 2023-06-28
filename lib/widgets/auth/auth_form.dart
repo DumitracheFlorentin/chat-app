@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chat_app/widgets/utils/alerts.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,17 +39,9 @@ class _AuthFormState extends State<AuthForm> {
       showDialog(
         context: context,
         builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Image not selected'),
-            content: const Text('Please select an image.'),
-            actions: [
-              TextButton(
-                child: const Text('Close'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
+          return const Alert(
+            title: 'Image not selected',
+            description: 'Please select an image.',
           );
         },
       );
@@ -58,6 +51,7 @@ class _AuthFormState extends State<AuthForm> {
     if (!isValid) {
       return;
     }
+
     _form.currentState!.save();
 
     try {
