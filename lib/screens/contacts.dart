@@ -1,9 +1,45 @@
 import 'package:flutter/material.dart';
 
-import 'package:chat_app/widgets/contacts/contacts_list.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class ContactsScreen extends StatelessWidget {
+import 'package:chat_app/widgets/contacts/contacts_list.dart';
+import 'package:chat_app/utils/users.dart';
+
+final _firebaseAuth = FirebaseAuth.instance;
+
+class ContactsScreen extends StatefulWidget {
   const ContactsScreen({super.key});
+
+  @override
+  State<ContactsScreen> createState() => _ContactsScreenState();
+}
+
+class _ContactsScreenState extends State<ContactsScreen> {
+  List<Map<String, dynamic>> users = [];
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getUsers();
+  }
+
+  void getUsers() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final List<Map<String, dynamic>> allUsers = await fetchAllUsers();
+
+    final List<Map<String, dynamic>> filteredUsers = allUsers
+        .where((user) => user['uid'] != _firebaseAuth.currentUser!.uid)
+        .toList();
+
+    setState(() {
+      users = filteredUsers;
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +48,11 @@ class ContactsScreen extends StatelessWidget {
         left: 16,
         right: 4,
       ),
-      child: const Text('contact list here'),
+      child: ContactsList(
+        isEnabledCreatedGroup: false,
+        users: users,
+        isLoading: isLoading,
+      ),
     );
   }
 }

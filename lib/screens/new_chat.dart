@@ -7,7 +7,7 @@ import 'package:chat_app/utils/users.dart';
 final _firebaseAuth = FirebaseAuth.instance;
 
 class NewChat extends StatefulWidget {
-  const NewChat({Key? key}) : super(key: key);
+  const NewChat({super.key});
 
   @override
   State<NewChat> createState() => _NewChatState();

@@ -4,11 +4,11 @@ import 'package:chat_app/utils/users.dart';
 
 class ContactsList extends StatefulWidget {
   const ContactsList({
-    Key? key,
+    super.key,
     required this.isEnabledCreatedGroup,
     required this.users,
     required this.isLoading,
-  }) : super(key: key);
+  });
 
   final bool isEnabledCreatedGroup;
   final List<Map<String, dynamic>> users;
