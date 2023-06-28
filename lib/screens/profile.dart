@@ -1,7 +1,6 @@
 import 'package:chat_app/widgets/auth/user_image_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -16,7 +15,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  File? _pickedImageFile;
+  File? _selectedImage;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firebaseFs = FirebaseFirestore.instance;
   late Stream<DocumentSnapshot> _userStream;
@@ -89,46 +88,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _pickImage(File pickedImage) {
-    setState(() {
-      _pickedImageFile = pickedImage;
-    });
-  }
-
   void changeProfileImage(BuildContext context) async {
-    final pickedImageFile = await ImagePicker().pickImage(
-      source: ImageSource.camera,
-      imageQuality: 50,
-      maxWidth: 150,
-    );
-
-    if (pickedImageFile == null) {
+    if (_selectedImage == null) {
       return;
     }
 
-    final currentUserUid = currentUser['uid'];
-    final previousImageUrl = currentUser['image_url'];
-
-    // Upload new image to Firebase Storage
-    final newImageRef = _firebaseStorage
+    // storage user's profile image
+    final storageRef = _firebaseStorage
         .ref()
         .child('user_images')
-        .child('$currentUserUid.jpg');
+        .child('${currentUser['uid']}.jpg');
 
-    await newImageRef.putFile(File(pickedImageFile.path));
+    await storageRef.putFile(_selectedImage!);
 
     // Get the download URL of the new image
-    final newImageUrl = await newImageRef.getDownloadURL();
+    final imageUrl = await storageRef.getDownloadURL();
 
     // Update the user's document with the new image URL
-    final userDocRef = _firebaseFs.collection('users').doc(currentUserUid);
-    await userDocRef.update({'image_url': newImageUrl});
-
-    // Delete the previous image from Firebase Storage
-    if (previousImageUrl != null) {
-      final previousImageRef = _firebaseStorage.refFromURL(previousImageUrl);
-      await previousImageRef.delete();
-    }
+    final userDocRef = _firebaseFs.collection('users').doc(currentUser['uid']);
+    await userDocRef.update({'image_url': imageUrl});
 
     Navigator.of(context).pop();
   }
@@ -202,6 +180,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text('Change Profile Image'),
+                              UserImagePicker(
+                                onPickImage: (pickedImage) {
+                                  _selectedImage = pickedImage;
+                                },
+                              ),
                               ElevatedButton(
                                 onPressed: () {
                                   changeProfileImage(context);

@@ -53,8 +53,12 @@ class _ContactsListState extends State<ContactsList> {
           .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
 
+      final filteredUsers = fetchedUsers
+          .where((user) => user['uid'] != currentUser['uid'])
+          .toList();
+
       setState(() {
-        users = fetchedUsers;
+        users = filteredUsers;
       });
     } catch (error) {
       print('Error retrieving users: $error');
