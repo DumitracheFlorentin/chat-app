@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:chat_app/screens/chat.dart';
-import 'package:chat_app/widgets/utils/users.dart';
+import 'package:chat_app/utils/users.dart';
 
 class ContactsList extends StatefulWidget {
   const ContactsList({super.key, required this.isEnabledCreatedGroup});

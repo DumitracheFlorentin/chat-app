@@ -1,5 +1,5 @@
-import 'package:chat_app/widgets/utils/profile/update-profile-photo-modal.dart';
-import 'package:chat_app/widgets/utils/profile/update-username-modal.dart';
+import 'package:chat_app/utils/profile/update-profile-photo-modal.dart';
+import 'package:chat_app/utils/profile/update-username-modal.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';

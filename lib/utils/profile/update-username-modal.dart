@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:chat_app/widgets/utils/users.dart';
+import 'package:chat_app/utils/users.dart';
 
 final _firebaseAuth = FirebaseAuth.instance;
 
