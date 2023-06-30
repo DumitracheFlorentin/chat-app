@@ -70,3 +70,19 @@ Future uploadImageProfile(userUid, selectedImage) async {
     return error;
   }
 }
+
+Future addConversationToUser(user, conversationId) async {
+  try {
+    final userDocRef = _firebaseFs.collection('users').doc(user['uid']);
+
+    if (user['conversations'] == null) {
+      await userDocRef.update({'conversations': []});
+    }
+
+    await userDocRef.update({
+      'conversations': [...user['conversations'], conversationId]
+    });
+  } catch (error) {
+    return error;
+  }
+}

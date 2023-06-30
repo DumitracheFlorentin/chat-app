@@ -1,10 +1,12 @@
 import 'package:chat_app/utils/alerts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chat_app/widgets/contacts/contacts_list.dart';
 import 'package:chat_app/utils/users.dart';
 
 final _firebaseAuth = FirebaseAuth.instance;
+final _firebaseFs = FirebaseFirestore.instance;
 
 class NewChat extends StatefulWidget {
   const NewChat({super.key});
@@ -86,7 +88,7 @@ class _NewChatState extends State<NewChat> {
     );
   }
 
-  void createNewGroup() {
+  void createNewGroup() async {
     String groupName = groupNameController.text;
     List<Map<String, dynamic>> checkedUsers =
         users.where((user) => user['checked'] == true).toList();
@@ -116,6 +118,23 @@ class _NewChatState extends State<NewChat> {
 
       return;
     }
+
+    // create new group
+    final newRoom = _firebaseFs.collection('rooms').doc();
+    final messagesCollection = newRoom.collection('messages');
+
+    await newRoom.set({
+      'users': checkedUsers,
+      'messagesCollection': messagesCollection.doc(),
+      'image': '',
+      'createdAt': Timestamp.now(),
+    });
+
+    for (var user in users) {
+      await addConversationToUser(user, newRoom.id);
+    }
+
+    Navigator.of(context).pop();
   }
 
   @override
