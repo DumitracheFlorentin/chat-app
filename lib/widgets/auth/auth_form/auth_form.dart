@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'package:chat_app/utils/alerts.dart';
+
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+import 'package:chat_app/widgets/auth/auth_form/auth_form.utils.dart';
 import 'package:chat_app/widgets/auth/user_image_picker.dart';
 
 final _firebaseStorage = FirebaseStorage.instance;
@@ -33,23 +34,16 @@ class _AuthFormState extends State<AuthForm> {
   var _selectedRole = 'guest';
 
   void _submit() async {
+    // validate form
     final isValid = _form.currentState!.validate();
-
-    if (!_isLogin && _selectedImage == null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const Alert(
-            title: 'Image not selected',
-            description: 'Please select an image.',
-          );
-        },
-      );
-      return;
-    }
 
     if (!isValid) {
       return;
+    }
+
+    // alert for image
+    if (!_isLogin && _selectedImage == null) {
+      return showImageProfileAlert(context);
     }
 
     _form.currentState!.save();

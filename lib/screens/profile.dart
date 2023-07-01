@@ -1,9 +1,10 @@
-import 'package:chat_app/utils/profile/update-profile-photo-modal.dart';
-import 'package:chat_app/utils/profile/update-username-modal.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:chat_app/widgets/profile/user_profile_actions/user_profile_actions.utils.dart';
+import 'package:chat_app/widgets/profile/user_profile_info.dart';
 
 final _firebaseFs = FirebaseFirestore.instance;
 final _firebaseAuth = FirebaseAuth.instance;
@@ -27,24 +28,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .collection('users')
         .doc(_firebaseAuth.currentUser!.uid)
         .snapshots();
-  }
-
-  void openChangeNicknameModal(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return const UpdateUsernameModal();
-      },
-    );
-  }
-
-  void openChangeProfilePhotoModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return const UpdateProfilePhotoModal();
-      },
-    );
   }
 
   @override
@@ -71,45 +54,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.network(
-                  currentUser['image_url'] ?? '',
-                  width: 200,
-                  height: 200,
-                  errorBuilder: (BuildContext context, Object exception,
-                      StackTrace? stackTrace) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  currentUser['username'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Divider(
-                  color: Colors.grey,
-                  thickness: 1,
-                  indent: 50,
-                  endIndent: 50,
-                ),
+                UserProfileInfo(currentUser: currentUser),
                 const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () {
-                    openChangeNicknameModal(context);
-                  },
-                  child: const Text('Change Nickname'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    openChangeProfilePhotoModal(context);
-                  },
-                  child: const Text('Change Profile Image'),
-                ),
+                UserProfileActions()
               ],
             ),
           );

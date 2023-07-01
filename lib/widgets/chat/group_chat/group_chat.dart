@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:chat_app/widgets/chat/chat_messages.dart';
-import 'package:chat_app/widgets/chat/new_message.dart';
 
-final _firebaseFs = FirebaseFirestore.instance;
+import 'package:chat_app/widgets/chat/group_chat/group_chat.utils.dart';
 
 class GroupChat extends StatefulWidget {
-  const GroupChat({
-    Key? key,
-    required this.groupId,
-  }) : super(key: key);
+  const GroupChat({super.key, required this.groupId});
 
   final String? groupId;
 
@@ -23,16 +17,7 @@ class _GroupChatState extends State<GroupChat> {
   @override
   void initState() {
     super.initState();
-    roomDataFuture = getRoomData();
-  }
-
-  Future<Map<String, dynamic>?> getRoomData() async {
-    DocumentSnapshot<Map<String, dynamic>> roomSnapshot =
-        await _firebaseFs.collection('rooms').doc(widget.groupId).get();
-
-    final roomData = roomSnapshot.data();
-
-    return roomData;
+    roomDataFuture = getRoomData(widget.groupId);
   }
 
   @override
@@ -50,10 +35,7 @@ class _GroupChatState extends State<GroupChat> {
               return const Text('Error retrieving room data');
             }
 
-            final room = snapshot.data;
-            final title =
-                room?['name'] ?? 'Group Chat'; // Fallback if title is null
-
+            final title = snapshot.data?['name'] ?? 'Group Chat';
             return Text(title);
           },
         ),
@@ -73,16 +55,9 @@ class _GroupChatState extends State<GroupChat> {
             );
           }
 
-          final room = snapshot.data;
+          final Map<String, dynamic>? room = snapshot.data;
 
-          return Column(
-            children: [
-              Expanded(
-                child: ChatMessages(roomName: room!['id']),
-              ),
-              NewMessage(roomName: room['id']),
-            ],
-          );
+          return buildChatContent(room);
         },
       ),
     );

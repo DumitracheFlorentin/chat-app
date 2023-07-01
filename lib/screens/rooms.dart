@@ -40,10 +40,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
     return {'matchingRooms': matchingRooms, 'currentUser': currentUser};
   }
 
-  Widget getNameOfGroup(
-    conversation,
-    currentUser,
-  ) {
+  Widget getNameOfGroup(conversation, currentUser) {
     if (conversation['users'].length > 2) {
       return Text(conversation['name']);
     }
@@ -55,10 +52,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
     return Text(secondUser[0]['username']);
   }
 
-  Widget getImageOfGroup(
-    conversation,
-    currentUser,
-  ) {
+  Widget getImageOfGroup(conversation, currentUser) {
     if (conversation['users'].length > 2) {
       return CircleAvatar(
         backgroundImage: NetworkImage(

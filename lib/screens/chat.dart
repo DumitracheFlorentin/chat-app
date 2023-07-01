@@ -1,6 +1,7 @@
-import 'package:chat_app/widgets/chat/group_chat.dart';
-import 'package:chat_app/widgets/chat/simple_chat.dart';
 import 'package:flutter/material.dart';
+
+import 'package:chat_app/widgets/chat/simple_chat/simple_chat.dart';
+import 'package:chat_app/widgets/chat/group_chat/group_chat.dart';
 
 class ChatScreen extends StatelessWidget {
   const ChatScreen({
@@ -9,8 +10,8 @@ class ChatScreen extends StatelessWidget {
     required this.groupId,
   });
 
-  final List<dynamic> users;
   final String groupId;
+  final List<dynamic> users;
 
   Widget simpleOrGroupChat() {
     if (users.length > 2) {
