@@ -1,50 +1,49 @@
 import 'package:flutter/material.dart';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:chat_app/screens/chat.dart';
+import 'package:chat_app/utils/users.dart';
 
 final _firebaseFs = FirebaseFirestore.instance;
-final _firebaseAuth = FirebaseAuth.instance;
 
-class RoomsScreen extends StatelessWidget {
+class RoomsScreen extends StatefulWidget {
   const RoomsScreen({super.key, required this.onSelectContacts});
 
   final Function(int index) onSelectContacts;
 
-  List<Map<String, dynamic>> _getFilteredRooms(
-    List<Map<String, dynamic>> rooms,
-  ) {
-    for (final room in rooms) {
-      final bool isCurrentUserRoom =
-          room['user1_id'] == _firebaseAuth.currentUser!.uid;
+  @override
+  State<RoomsScreen> createState() => _RoomsScreenState();
+}
 
-      room['currentUser'] = {
-        'uid': isCurrentUserRoom ? room['user1_id'] : room['user2_id'],
-        'image_url':
-            isCurrentUserRoom ? room['user1_image'] : room['user2_image'],
-        'username':
-            isCurrentUserRoom ? room['user1_username'] : room['user2_username'],
-      };
+class _RoomsScreenState extends State<RoomsScreen> {
+  Future<List<Map<String, dynamic>>> getAllConversations() async {
+    final currentUser = await fetchCurrentUser();
 
-      room['secondUser'] = {
-        'uid': isCurrentUserRoom ? room['user2_id'] : room['user1_id'],
-        'image_url':
-            isCurrentUserRoom ? room['user2_image'] : room['user1_image'],
-        'username':
-            isCurrentUserRoom ? room['user2_username'] : room['user1_username'],
-      };
+    if (currentUser['conversations'] == null) {
+      return [];
     }
 
-    return rooms.toList();
+    final QuerySnapshot roomSnapshot =
+        await _firebaseFs.collection('rooms').get();
+
+    final List<Map<String, dynamic>> matchingRooms = roomSnapshot.docs
+        .where((roomDoc) => currentUser['conversations'].contains(roomDoc.id))
+        .map(
+          (roomDoc) => {
+            ...roomDoc.data() as Map<String, dynamic>,
+            'id': roomDoc.id,
+          },
+        )
+        .toList();
+
+    return matchingRooms;
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<QuerySnapshot>(
-      future: _firebaseFs.collection('rooms').get(),
-      builder: (context, snapshot) {
+    return FutureBuilder(
+      future: getAllConversations(),
+      builder: (ctx, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(
             child: CircularProgressIndicator(),
@@ -53,23 +52,13 @@ class RoomsScreen extends StatelessWidget {
 
         if (snapshot.hasError) {
           return const Center(
-            child: Text('Error retrieving users'),
+            child: Text('Error retrieving room name'),
           );
         }
 
-        // get all rooms by currentUser's uid
-        final List<Map<String, dynamic>> rooms = snapshot.data!.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .where(
-              (roomData) =>
-                  roomData['user1_id'] == _firebaseAuth.currentUser!.uid ||
-                  roomData['user2_id'] == _firebaseAuth.currentUser!.uid,
-            )
-            .toList();
+        final conversations = snapshot.data!;
 
-        final filteredRooms = _getFilteredRooms(rooms);
-
-        if (filteredRooms.isEmpty) {
+        if (conversations.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -77,7 +66,7 @@ class RoomsScreen extends StatelessWidget {
                 const Text('No rooms found. Create one!'),
                 TextButton.icon(
                   onPressed: () {
-                    onSelectContacts(1);
+                    widget.onSelectContacts(1);
                   },
                   icon: const Icon(
                     Icons.add,
@@ -90,26 +79,17 @@ class RoomsScreen extends StatelessWidget {
         }
 
         return ListView.builder(
-          itemCount: filteredRooms.length,
+          itemCount: conversations.length,
           itemBuilder: (context, index) {
             return InkWell(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => ChatScreen(
-                      currentUser: filteredRooms[index]['currentUser'],
-                      secondUser: filteredRooms[index]['secondUser'],
-                    ),
-                  ),
-                );
-              },
+              onTap: () {},
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundImage: NetworkImage(
-                    filteredRooms[index]['secondUser']['image_url'],
+                    conversations[index]['image'],
                   ),
                 ),
-                title: Text(filteredRooms[index]['secondUser']['username']),
+                title: Text(conversations[index]['name']),
               ),
             );
           },

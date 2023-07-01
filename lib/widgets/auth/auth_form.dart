@@ -87,6 +87,7 @@ class _AuthFormState extends State<AuthForm> {
         'image_url': imageUrl,
         'role': _selectedRole,
         'uid': userCredentials.user!.uid,
+        'conversations': []
       };
 
       await _firebaseFs

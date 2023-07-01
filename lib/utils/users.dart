@@ -86,3 +86,28 @@ Future addConversationToUser(user, conversationId) async {
     return error;
   }
 }
+
+Future getConversationsByUser(currentUser) async {
+  try {
+    if (currentUser['conversations'] == null) {
+      return [];
+    }
+
+    final QuerySnapshot roomSnapshot =
+        await _firebaseFs.collection('rooms').get();
+
+    final List<Map<String, dynamic>> matchingRooms = roomSnapshot.docs
+        .where((roomDoc) => currentUser['conversations'].contains(roomDoc.id))
+        .map(
+          (roomDoc) => {
+            ...roomDoc.data() as Map<String, dynamic>,
+            'id': roomDoc.id,
+          },
+        )
+        .toList();
+
+    return matchingRooms;
+  } catch (error) {
+    return error;
+  }
+}

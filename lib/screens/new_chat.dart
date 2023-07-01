@@ -1,12 +1,18 @@
-import 'package:chat_app/utils/alerts.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
+
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:chat_app/widgets/auth/user_image_picker.dart';
 import 'package:chat_app/widgets/contacts/contacts_list.dart';
+import 'package:chat_app/utils/alerts.dart';
 import 'package:chat_app/utils/users.dart';
 
 final _firebaseAuth = FirebaseAuth.instance;
 final _firebaseFs = FirebaseFirestore.instance;
+final _firebaseStorage = FirebaseStorage.instance;
 
 class NewChat extends StatefulWidget {
   const NewChat({super.key});
@@ -16,10 +22,13 @@ class NewChat extends StatefulWidget {
 }
 
 class _NewChatState extends State<NewChat> {
-  TextEditingController groupNameController = TextEditingController();
-  List<Map<String, dynamic>> users = [];
+  File? _selectedImage;
   bool isLoading = false;
-  var isEnabled = false;
+  bool isEnabled = false;
+
+  TextEditingController groupNameController = TextEditingController();
+  List<Map<String, dynamic>> allUsersWithoutCurrent = [];
+  Map<String, dynamic> currentUser = {};
 
   void getUsers() async {
     setState(() {
@@ -33,9 +42,37 @@ class _NewChatState extends State<NewChat> {
         .toList();
 
     setState(() {
-      users = filteredUsers;
+      allUsersWithoutCurrent = filteredUsers;
       isLoading = false;
     });
+  }
+
+  void getCurrentUser() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    final userData = await fetchCurrentUser();
+
+    setState(() {
+      currentUser = userData;
+      isLoading = false;
+    });
+  }
+
+  Widget showImageOfGroupWidget() {
+    if (isEnabled) {
+      return UserImagePicker(
+        onPickImage: (pickedImage) {
+          _selectedImage = pickedImage;
+        },
+      );
+    }
+
+    return const SizedBox(
+      height: 0,
+      width: 0,
+    );
   }
 
   Widget showNameOfGroupWidget() {
@@ -90,16 +127,18 @@ class _NewChatState extends State<NewChat> {
 
   void createNewGroup() async {
     String groupName = groupNameController.text;
-    List<Map<String, dynamic>> checkedUsers =
-        users.where((user) => user['checked'] == true).toList();
+    List<Map<String, dynamic>> checkedUsers = allUsersWithoutCurrent
+        .where((user) => user['checked'] == true)
+        .toList();
 
-    if (checkedUsers.length < 3) {
+    if (checkedUsers.length < 2) {
       showDialog(
         context: context,
         builder: (BuildContext context) {
           return const Alert(
               title: 'Error',
-              description: 'You need at least 3 members to create a group');
+              description:
+                  'You have to add at least 2 members to create a group');
         },
       );
 
@@ -119,20 +158,33 @@ class _NewChatState extends State<NewChat> {
       return;
     }
 
+    // add the current user to checkUsers array
+    checkedUsers.add(currentUser);
+
     // create new group
     final newRoom = _firebaseFs.collection('rooms').doc();
     final messagesCollection = newRoom.collection('messages');
 
+    for (var user in checkedUsers) {
+      await addConversationToUser(user, newRoom.id);
+    }
+
+    // storage user's profile image
+    final storageRef =
+        _firebaseStorage.ref().child('group_images').child('${newRoom.id}.jpg');
+
+    await storageRef.putFile(_selectedImage!);
+
+    // storage user's profile
+    final imageUrl = await storageRef.getDownloadURL();
+
     await newRoom.set({
       'users': checkedUsers,
       'messagesCollection': messagesCollection.doc(),
-      'image': '',
+      'image': imageUrl,
+      'name': groupName,
       'createdAt': Timestamp.now(),
     });
-
-    for (var user in users) {
-      await addConversationToUser(user, newRoom.id);
-    }
 
     Navigator.of(context).pop();
   }
@@ -141,6 +193,7 @@ class _NewChatState extends State<NewChat> {
   void initState() {
     super.initState();
     getUsers();
+    getCurrentUser();
   }
 
   @override
@@ -168,6 +221,7 @@ class _NewChatState extends State<NewChat> {
             const SizedBox(
               height: 20,
             ),
+            showImageOfGroupWidget(),
             showNameOfGroupWidget(),
             const Row(
               children: [
@@ -188,7 +242,7 @@ class _NewChatState extends State<NewChat> {
                 padding: EdgeInsets.zero,
                 child: ContactsList(
                   isEnabledCreatedGroup: isEnabled,
-                  users: users,
+                  users: allUsersWithoutCurrent,
                   isLoading: isLoading,
                 ),
               ),
