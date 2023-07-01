@@ -16,7 +16,7 @@ class RoomsScreen extends StatefulWidget {
 }
 
 class _RoomsScreenState extends State<RoomsScreen> {
-  Future<List<Map<String, dynamic>>> getAllConversations() async {
+  Future getAllConversations() async {
     final currentUser = await fetchCurrentUser();
 
     if (currentUser['conversations'] == null) {
@@ -36,7 +36,45 @@ class _RoomsScreenState extends State<RoomsScreen> {
         )
         .toList();
 
-    return matchingRooms;
+    return {'matchingRooms': matchingRooms, 'currentUser': currentUser};
+  }
+
+  Widget getNameOfGroup(
+    conversation,
+    currentUser,
+  ) {
+    if (conversation['users'].length > 2) {
+      return Text(conversation['name']);
+    }
+
+    final secondUser = conversation['users']
+        .where((user) => user['uid'] != currentUser['uid'])
+        .toList();
+
+    return Text(secondUser[0]['username']);
+  }
+
+  Widget getImageOfGroup(
+    conversation,
+    currentUser,
+  ) {
+    if (conversation['users'].length > 2) {
+      return CircleAvatar(
+        backgroundImage: NetworkImage(
+          conversation['image'],
+        ),
+      );
+    }
+
+    final secondUser = conversation['users']
+        .where((user) => user['uid'] != currentUser['uid'])
+        .toList();
+
+    return CircleAvatar(
+      backgroundImage: NetworkImage(
+        secondUser[0]['image_url'],
+      ),
+    );
   }
 
   @override
@@ -56,7 +94,10 @@ class _RoomsScreenState extends State<RoomsScreen> {
           );
         }
 
-        final conversations = snapshot.data!;
+        final conversations =
+            snapshot.data!['matchingRooms'] as List<Map<String, dynamic>>;
+        final currentUser =
+            snapshot.data!['currentUser'] as Map<String, dynamic>;
 
         if (conversations.isEmpty) {
           return Center(
@@ -84,12 +125,8 @@ class _RoomsScreenState extends State<RoomsScreen> {
             return InkWell(
               onTap: () {},
               child: ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    conversations[index]['image'],
-                  ),
-                ),
-                title: Text(conversations[index]['name']),
+                leading: getImageOfGroup(conversations[index], currentUser),
+                title: getNameOfGroup(conversations[index], currentUser),
               ),
             );
           },
