@@ -1,3 +1,4 @@
+import 'package:chat_app/screens/chat.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -123,7 +124,16 @@ class _RoomsScreenState extends State<RoomsScreen> {
           itemCount: conversations.length,
           itemBuilder: (context, index) {
             return InkWell(
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ChatScreen(
+                      users: conversations[index]['users'],
+                      groupId: conversations[index]['id'],
+                    ),
+                  ),
+                );
+              },
               child: ListTile(
                 leading: getImageOfGroup(conversations[index], currentUser),
                 title: getNameOfGroup(conversations[index], currentUser),

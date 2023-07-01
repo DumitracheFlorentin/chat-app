@@ -82,8 +82,11 @@ class _ContactsListState extends State<ContactsList> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (ctx) => ChatScreen(
-                          currentUser: currentUser,
-                          secondUser: user,
+                          users: [
+                            currentUser,
+                            user,
+                          ],
+                          groupId: '',
                         ),
                       ),
                     );

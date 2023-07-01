@@ -179,6 +179,7 @@ class _NewChatState extends State<NewChat> {
     final imageUrl = await storageRef.getDownloadURL();
 
     await newRoom.set({
+      'id': newRoom.id,
       'users': checkedUsers,
       'messagesCollection': messagesCollection.doc(),
       'image': imageUrl,
