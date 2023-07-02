@@ -35,31 +35,34 @@ class _ContactsListState extends State<ContactsList> {
     });
   }
 
-  void handleCheckboxChange(int index, bool value) {
-    setState(() {
-      widget.users[index]['checked'] = value;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    final filteredUsers =
+        widget.users.where((user) => user['role'] == 'teacher').toList();
+
     if (widget.isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
       );
     }
 
-    if (widget.users.isEmpty) {
+    if (filteredUsers.isEmpty) {
       return const Center(
-        child: Text('No users found.'),
+        child: Text('No teachers found.'),
       );
+    }
+
+    void handleCheckboxChange(int index, bool value) {
+      setState(() {
+        filteredUsers[index]['checked'] = value;
+      });
     }
 
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: widget.users.length,
+      itemCount: filteredUsers.length,
       itemBuilder: (context, index) {
-        final Map<String, dynamic> user = widget.users[index];
+        final Map<String, dynamic> user = filteredUsers[index];
 
         return ListTile(
           contentPadding: EdgeInsets.zero,
