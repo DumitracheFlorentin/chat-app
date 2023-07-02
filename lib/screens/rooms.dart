@@ -127,7 +127,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
           );
         }
 
-        if (conversations.isEmpty && !isLoading) {
+        if (conversations == null || conversations.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
