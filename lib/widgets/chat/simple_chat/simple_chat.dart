@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chat_app/widgets/chat/simple_chat/simple_chat.utils.dart';
@@ -30,7 +31,8 @@ class _SimpleChatState extends State<SimpleChat> {
 
   @override
   Widget build(BuildContext context) {
-    final String secondUserUsername = widget.secondUser['username'];
+    final String secondUserUsername =
+        EncryptionUtils.decryptData(widget.secondUser['username']);
     return Scaffold(
       appBar: AppBar(
         title: Text(secondUserUsername),

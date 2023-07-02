@@ -1,16 +1,18 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 import 'package:chat_app/screens/chat.dart';
-import 'package:chat_app/utils/users.dart';
 
 class ContactsList extends StatefulWidget {
   const ContactsList({
-    super.key,
+    Key? key,
     required this.isEnabledCreatedGroup,
+    required this.currentUser,
     required this.users,
     required this.isLoading,
-  });
+  }) : super(key: key);
 
   final bool isEnabledCreatedGroup;
+  final Map<String, dynamic> currentUser;
   final List<Map<String, dynamic>> users;
   final bool isLoading;
 
@@ -19,27 +21,12 @@ class ContactsList extends StatefulWidget {
 }
 
 class _ContactsListState extends State<ContactsList> {
-  Map<String, dynamic> currentUser = {};
-
-  @override
-  void initState() {
-    super.initState();
-    getCurrentUser();
-  }
-
-  void getCurrentUser() async {
-    final userData = await fetchCurrentUser();
-
-    setState(() {
-      currentUser = userData;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final filteredUsers = currentUser['role'] == 'teacher'
-        ? widget.users
-        : widget.users.where((user) => user['role'] == 'teacher').toList();
+    final filteredUsers = widget.users.where((user) {
+      final decryptedRole = EncryptionUtils.decryptData(user['role']) ?? '';
+      return decryptedRole == 'teacher';
+    }).toList();
 
     if (widget.isLoading) {
       return const Center(
@@ -65,15 +52,19 @@ class _ContactsListState extends State<ContactsList> {
       itemBuilder: (context, index) {
         final Map<String, dynamic> user = filteredUsers[index];
 
+        final decryptedImageUrl =
+            EncryptionUtils.decryptData(user['image_url']);
+        final decryptedUsername = EncryptionUtils.decryptData(user['username']);
+
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
-            backgroundImage: NetworkImage(user['image_url']),
+            backgroundImage: NetworkImage(decryptedImageUrl),
           ),
-          title: Text(user['username']),
+          title: Text(decryptedUsername),
           trailing: widget.isEnabledCreatedGroup
               ? Checkbox(
-                  value: user['checked'] ?? false,
+                  value: user['checked'] as bool? ?? false,
                   onChanged: (value) {
                     setState(() {
                       handleCheckboxChange(index, value ?? false);
@@ -87,7 +78,7 @@ class _ContactsListState extends State<ContactsList> {
                       MaterialPageRoute(
                         builder: (ctx) => ChatScreen(
                           users: [
-                            currentUser,
+                            widget.currentUser,
                             user,
                           ],
                           groupId: '',

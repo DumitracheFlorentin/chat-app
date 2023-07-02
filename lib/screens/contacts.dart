@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,11 +17,13 @@ class ContactsScreen extends StatefulWidget {
 
 class _ContactsScreenState extends State<ContactsScreen> {
   List<Map<String, dynamic>> users = [];
+  Map<String, dynamic> currentUser = {};
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    getCurrentUser();
     getUsers();
   }
 
@@ -32,12 +35,22 @@ class _ContactsScreenState extends State<ContactsScreen> {
     final List<Map<String, dynamic>> allUsers = await fetchAllUsers();
 
     final List<Map<String, dynamic>> filteredUsers = allUsers
-        .where((user) => user['uid'] != _firebaseAuth.currentUser!.uid)
+        .where((user) =>
+            EncryptionUtils.decryptData(user['uid']) !=
+            _firebaseAuth.currentUser!.uid)
         .toList();
 
     setState(() {
       users = filteredUsers;
       isLoading = false;
+    });
+  }
+
+  void getCurrentUser() async {
+    final userData = await fetchCurrentUser();
+
+    setState(() {
+      currentUser = userData;
     });
   }
 
@@ -51,6 +64,7 @@ class _ContactsScreenState extends State<ContactsScreen> {
       child: ContactsList(
         isEnabledCreatedGroup: false,
         users: users,
+        currentUser: currentUser,
         isLoading: isLoading,
       ),
     );

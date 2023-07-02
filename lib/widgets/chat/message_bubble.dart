@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -38,7 +39,7 @@ class MessageBubble extends StatelessWidget {
             right: isMe ? 0 : null,
             child: CircleAvatar(
               backgroundImage: NetworkImage(
-                userImage!,
+                EncryptionUtils.decryptData(userImage!),
               ),
               backgroundColor: theme.colorScheme.primary.withAlpha(180),
               radius: 23,
@@ -62,7 +63,7 @@ class MessageBubble extends StatelessWidget {
                         right: 13,
                       ),
                       child: Text(
-                        username!,
+                        EncryptionUtils.decryptData(username!),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
@@ -95,7 +96,7 @@ class MessageBubble extends StatelessWidget {
                       horizontal: 12,
                     ),
                     child: Text(
-                      message,
+                      EncryptionUtils.decryptData(message!),
                       style: TextStyle(
                         height: 1.3,
                         color: isMe

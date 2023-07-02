@@ -242,6 +242,7 @@ class _NewChatState extends State<NewChat> {
               child: Container(
                 padding: EdgeInsets.zero,
                 child: ContactsList(
+                  currentUser: currentUser,
                   isEnabledCreatedGroup: isEnabled,
                   users: allUsersWithoutCurrent,
                   isLoading: isLoading,

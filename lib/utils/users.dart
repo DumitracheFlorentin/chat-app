@@ -76,7 +76,11 @@ Future uploadImageProfile(userUid, selectedImage) async {
 
 Future addConversationToUser(user, conversationId) async {
   try {
-    final userDocRef = _firebaseFs.collection('users').doc(user['uid']);
+    final userDocRef = _firebaseFs
+        .collection('users')
+        .doc(EncryptionUtils.decryptData(user['uid']));
+
+    print(userDocRef);
 
     if (user['conversations'] == null) {
       await userDocRef.update({'conversations': []});

@@ -1,4 +1,5 @@
 import 'package:chat_app/screens/chat.dart';
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -47,10 +48,12 @@ class _RoomsScreenState extends State<RoomsScreen> {
     }
 
     final secondUser = conversation['users']
-        .where((user) => user['uid'] != currentUser['uid'])
+        .where((user) =>
+            EncryptionUtils.decryptData(user['uid']) !=
+            EncryptionUtils.decryptData(currentUser['uid']))
         .toList();
 
-    return Text(secondUser[0]['username']);
+    return Text(EncryptionUtils.decryptData(secondUser[0]['username']));
   }
 
   Widget getImageOfGroup(conversation, currentUser) {
@@ -63,12 +66,14 @@ class _RoomsScreenState extends State<RoomsScreen> {
     }
 
     final secondUser = conversation['users']
-        .where((user) => user['uid'] != currentUser['uid'])
+        .where((user) =>
+            EncryptionUtils.decryptData(user['uid']) !=
+            EncryptionUtils.decryptData(currentUser['uid']))
         .toList();
 
     return CircleAvatar(
       backgroundImage: NetworkImage(
-        secondUser[0]['image_url'],
+        EncryptionUtils.decryptData(secondUser[0]['image_url']),
       ),
     );
   }
