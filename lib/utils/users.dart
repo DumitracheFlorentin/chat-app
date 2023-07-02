@@ -80,8 +80,6 @@ Future addConversationToUser(user, conversationId) async {
         .collection('users')
         .doc(EncryptionUtils.decryptData(user['uid']));
 
-    print(userDocRef);
-
     if (user['conversations'] == null) {
       await userDocRef.update({'conversations': []});
     }

@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -41,7 +42,7 @@ class _NewMessageState extends State<NewMessage> {
         .doc(_firebaseAuth.currentUser!.uid)
         .get();
     final messageData = {
-      'text': enteredMessage,
+      'text': EncryptionUtils.encryptData(enteredMessage),
       'createdAt': Timestamp.now(),
       'userId': userData.data()!['uid'],
       'username': userData.data()!['username'],

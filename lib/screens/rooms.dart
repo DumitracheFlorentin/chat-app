@@ -115,6 +115,18 @@ class _RoomsScreenState extends State<RoomsScreen> {
 
         final conversations = snapshot.data as List<Map<String, dynamic>>;
 
+        if (!isLoading &&
+            EncryptionUtils.decryptData(currentUser['role']) == 'guest') {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('You do not have permissions to create conversations!'),
+              ],
+            ),
+          );
+        }
+
         if (conversations.isEmpty && !isLoading) {
           return Center(
             child: Column(

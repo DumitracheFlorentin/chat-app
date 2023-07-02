@@ -62,31 +62,37 @@ class _ContactsListState extends State<ContactsList> {
             backgroundImage: NetworkImage(decryptedImageUrl),
           ),
           title: Text(decryptedUsername),
-          trailing: widget.isEnabledCreatedGroup
-              ? Checkbox(
-                  value: user['checked'] as bool? ?? false,
-                  onChanged: (value) {
-                    setState(() {
-                      handleCheckboxChange(index, value ?? false);
-                    });
-                  },
-                )
-              : IconButton(
-                  icon: const Icon(Icons.chat),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ChatScreen(
-                          users: [
-                            widget.currentUser,
-                            user,
-                          ],
-                          groupId: '',
+          trailing:
+              EncryptionUtils.decryptData(widget.currentUser['role']) == 'guest'
+                  ? const SizedBox(
+                      height: 0,
+                      width: 0,
+                    )
+                  : widget.isEnabledCreatedGroup
+                      ? Checkbox(
+                          value: user['checked'] as bool? ?? false,
+                          onChanged: (value) {
+                            setState(() {
+                              handleCheckboxChange(index, value ?? false);
+                            });
+                          },
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.chat),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => ChatScreen(
+                                  users: [
+                                    widget.currentUser,
+                                    user,
+                                  ],
+                                  groupId: '',
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    );
-                  },
-                ),
         );
       },
     );

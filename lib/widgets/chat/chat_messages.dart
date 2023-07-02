@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -67,14 +68,16 @@ class ChatMessages extends StatelessWidget {
             if (nextUserIsSame) {
               return MessageBubble.next(
                 message: chatMessage['text'],
-                isMe: authenticatedUser.uid == currentMessageUserId,
+                isMe: authenticatedUser.uid ==
+                    EncryptionUtils.decryptData(currentMessageUserId),
               );
             } else {
               return MessageBubble.first(
                 userImage: chatMessage['userImage'],
                 username: chatMessage['username'],
                 message: chatMessage['text'],
-                isMe: authenticatedUser.uid == currentMessageUserId,
+                isMe: authenticatedUser.uid ==
+                    EncryptionUtils.decryptData(currentMessageUserId),
               );
             }
           },
