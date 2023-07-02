@@ -11,19 +11,17 @@ class UserProfileInfo extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          currentUser['image_url']
-              ? Image.network(
-                  currentUser['image_url'],
-                  width: 200,
-                  height: 200,
-                  errorBuilder: (BuildContext context, Object exception,
-                      StackTrace? stackTrace) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  },
-                )
-              : const CircularProgressIndicator(),
+          Image.network(
+            currentUser['image_url'],
+            width: 200,
+            height: 200,
+            errorBuilder: (BuildContext context, Object exception,
+                StackTrace? stackTrace) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            },
+          ),
           const SizedBox(height: 16),
           Text(
             currentUser['username'] ?? '',

@@ -37,8 +37,9 @@ class _ContactsListState extends State<ContactsList> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredUsers =
-        widget.users.where((user) => user['role'] == 'teacher').toList();
+    final filteredUsers = currentUser['role'] == 'teacher'
+        ? widget.users
+        : widget.users.where((user) => user['role'] == 'teacher').toList();
 
     if (widget.isLoading) {
       return const Center(

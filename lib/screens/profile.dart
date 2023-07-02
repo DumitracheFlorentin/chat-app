@@ -56,7 +56,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 UserProfileInfo(currentUser: currentUser),
                 const SizedBox(height: 8),
-                UserProfileActions()
+                const UserProfileActions()
               ],
             ),
           );
