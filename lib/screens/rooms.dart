@@ -17,9 +17,10 @@ class RoomsScreen extends StatefulWidget {
 }
 
 class _RoomsScreenState extends State<RoomsScreen> {
-  Future getAllConversations() async {
-    final currentUser = await fetchCurrentUser();
+  Map<String, dynamic> currentUser = {};
+  bool isLoading = false;
 
+  Future<List<Map<String, dynamic>>> getAllConversations() async {
     if (currentUser['conversations'] == null) {
       return [];
     }
@@ -37,7 +38,7 @@ class _RoomsScreenState extends State<RoomsScreen> {
         )
         .toList();
 
-    return {'matchingRooms': matchingRooms, 'currentUser': currentUser};
+    return matchingRooms;
   }
 
   Widget getNameOfGroup(conversation, currentUser) {
@@ -73,8 +74,26 @@ class _RoomsScreenState extends State<RoomsScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    setState(() {
+      isLoading = true;
+    });
+    final userData = await fetchCurrentUser();
+
+    setState(() {
+      isLoading = false;
+      currentUser = userData;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return FutureBuilder<List<Map<String, dynamic>>>(
       future: getAllConversations(),
       builder: (ctx, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -89,12 +108,9 @@ class _RoomsScreenState extends State<RoomsScreen> {
           );
         }
 
-        final conversations =
-            snapshot.data!['matchingRooms'] as List<Map<String, dynamic>>;
-        final currentUser =
-            snapshot.data!['currentUser'] as Map<String, dynamic>;
+        final conversations = snapshot.data as List<Map<String, dynamic>>;
 
-        if (conversations.isEmpty) {
+        if (conversations.isEmpty && !isLoading) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
