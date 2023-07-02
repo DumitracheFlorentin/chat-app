@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:chat_app/widgets/profile/user_profile_actions/user_profile_actions.utils.dart';
 import 'package:chat_app/widgets/profile/user_profile_info.dart';
 
@@ -33,31 +31,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: _userStream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching user data'));
-          }
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          final isPortrait = orientation == Orientation.portrait;
+          return SingleChildScrollView(
+            child: StreamBuilder<DocumentSnapshot>(
+              stream: _userStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(child: Text('Error fetching user data'));
+                }
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          final user = snapshot.data?.data() as Map<String, dynamic>?;
+                final user = snapshot.data?.data() as Map<String, dynamic>?;
 
-          if (user != null) {
-            currentUser = user;
-          }
+                if (user != null) {
+                  currentUser = user;
+                }
 
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                UserProfileInfo(currentUser: currentUser),
-                const SizedBox(height: 8),
-                const UserProfileActions()
-              ],
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: isPortrait ? 175 : 0,
+                      ),
+                      UserProfileInfo(currentUser: currentUser),
+                      const SizedBox(height: 8),
+                      const UserProfileActions(),
+                    ],
+                  ),
+                );
+              },
             ),
           );
         },

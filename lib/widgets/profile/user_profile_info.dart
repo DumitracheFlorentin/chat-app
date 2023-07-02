@@ -13,8 +13,8 @@ class UserProfileInfo extends StatelessWidget {
         children: [
           Image.network(
             currentUser['image_url'],
-            width: 200,
-            height: 200,
+            width: 150,
+            height: 150,
             errorBuilder: (BuildContext context, Object exception,
                 StackTrace? stackTrace) {
               return const Center(
