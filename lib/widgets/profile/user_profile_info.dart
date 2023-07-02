@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 class UserProfileInfo extends StatelessWidget {
@@ -12,7 +13,7 @@ class UserProfileInfo extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.network(
-            currentUser['image_url'],
+            EncryptionUtils.decryptData(currentUser['image_url']),
             width: 150,
             height: 150,
             errorBuilder: (BuildContext context, Object exception,
@@ -24,7 +25,7 @@ class UserProfileInfo extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            currentUser['username'] ?? '',
+            EncryptionUtils.decryptData(currentUser['username']),
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,11 +77,11 @@ class _AuthFormState extends State<AuthForm> {
       // storage user's profile
       final imageUrl = await storageRef.getDownloadURL();
       final userData = {
-        'username': _enteredUsername,
-        'email': _enteredEmail,
-        'image_url': imageUrl,
-        'role': _selectedRole,
-        'uid': userCredentials.user!.uid,
+        'username': EncryptionUtils.encryptData(_enteredUsername),
+        'email': EncryptionUtils.encryptData(_enteredEmail),
+        'image_url': EncryptionUtils.encryptData(imageUrl),
+        'role': EncryptionUtils.encryptData(_selectedRole),
+        'uid': EncryptionUtils.encryptData(userCredentials.user!.uid),
         'conversations': []
       };
 

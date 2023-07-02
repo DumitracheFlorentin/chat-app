@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -39,7 +40,8 @@ Future updateUsernameByUid(userUid, newUsername) async {
   try {
     final userDocRef = _firebaseFs.collection('users').doc(userUid);
 
-    await userDocRef.update({'username': newUsername});
+    await userDocRef
+        .update({'username': EncryptionUtils.encryptData(newUsername)});
   } catch (error) {
     return error;
   }
@@ -49,7 +51,8 @@ Future updateImageByUid(userUid, imageUrl) async {
   try {
     final userDocRef = _firebaseFs.collection('users').doc(userUid);
 
-    await userDocRef.update({'image_url': imageUrl});
+    await userDocRef
+        .update({'image_url': EncryptionUtils.encryptData(imageUrl)});
   } catch (error) {
     return error;
   }
