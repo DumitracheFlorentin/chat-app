@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/users.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,7 +20,22 @@ class TabsScreen extends StatefulWidget {
 }
 
 class _TabsScreenState extends State<TabsScreen> {
+  Map<String, dynamic> currentUser = {};
   int _screenIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    getCurrentUser();
+  }
+
+  void getCurrentUser() async {
+    final userData = await fetchCurrentUser();
+
+    setState(() {
+      currentUser = userData;
+    });
+  }
 
   void _selectScreen(int index) {
     setState(() {
@@ -42,7 +58,7 @@ class _TabsScreenState extends State<TabsScreen> {
       activeScreenTitle = 'Profile';
     }
 
-    IconData getAppBarIcon() {
+    IconData? getAppBarIcon() {
       if (_screenIndex == 1) {
         return Icons.add;
       }
@@ -65,7 +81,14 @@ class _TabsScreenState extends State<TabsScreen> {
     }
 
     Widget buildAppBarActions() {
-      if (_screenIndex == 1 || _screenIndex == 2) {
+      if (_screenIndex == 1 && currentUser['role'] == 'teacher') {
+        return IconButton(
+          onPressed: getAppBarAction,
+          icon: Icon(getAppBarIcon()),
+        );
+      }
+
+      if (_screenIndex == 2) {
         return IconButton(
           onPressed: getAppBarAction,
           icon: Icon(getAppBarIcon()),
