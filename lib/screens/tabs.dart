@@ -1,3 +1,4 @@
+import 'package:chat_app/utils/encryption.dart';
 import 'package:chat_app/utils/users.dart';
 import 'package:flutter/material.dart';
 
@@ -81,7 +82,7 @@ class _TabsScreenState extends State<TabsScreen> {
     }
 
     Widget buildAppBarActions() {
-      if (_screenIndex == 1 && currentUser['role'] == 'teacher') {
+      if (_screenIndex == 1 && EncryptionUtils.decryptData(currentUser['role']) == 'teacher') {
         return IconButton(
           onPressed: getAppBarAction,
           icon: Icon(getAppBarIcon()),

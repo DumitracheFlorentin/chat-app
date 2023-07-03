@@ -23,10 +23,15 @@ class ContactsList extends StatefulWidget {
 class _ContactsListState extends State<ContactsList> {
   @override
   Widget build(BuildContext context) {
-    final filteredUsers = widget.users.where((user) {
+    final filteredUsers = !widget.isLoading && EncryptionUtils.decryptData(widget.currentUser['role']) == 'teacher' ? widget.users : widget.users.where((user) {
       final decryptedRole = EncryptionUtils.decryptData(user['role']) ?? '';
-      return decryptedRole == 'teacher';
+      if (EncryptionUtils.decryptData(widget.currentUser['role'])  == 'teacher') {
+        return true;
+      } else {
+        return decryptedRole == 'teacher';
+      }
     }).toList();
+
 
     if (widget.isLoading) {
       return const Center(

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chat_app/utils/encryption.dart';
 import 'package:flutter/material.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
@@ -38,7 +39,7 @@ class _NewChatState extends State<NewChat> {
     final List<Map<String, dynamic>> allUsers = await fetchAllUsers();
 
     final List<Map<String, dynamic>> filteredUsers = allUsers
-        .where((user) => user['uid'] != _firebaseAuth.currentUser!.uid)
+        .where((user) => EncryptionUtils.decryptData(user['uid']) != _firebaseAuth.currentUser!.uid)
         .toList();
 
     setState(() {
